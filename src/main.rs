@@ -5,7 +5,18 @@ use std::path::Path;
 use std::process::Command;
 use std::{error::Error, result::Result};
 
-fn main() -> Result<(), Box<Error>> {
+fn main() {
+    loop {
+        if let Err(e) = run() {
+            // keep running in the case of an error
+            eprintln!("{}", e)
+        } else {
+            return;
+        }
+    }
+}
+
+fn run() -> Result<(), Box<Error>> {
     loop {
         print!(
             "{}> ",
