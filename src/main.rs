@@ -1,27 +1,26 @@
 #![feature(slice_patterns)]
-
 use std::env;
 use std::io::{stdin, stdout, Write};
 use std::path::Path;
 use std::process::Command;
+use std::{error::Error, result::Result};
 
-fn main() {
+fn main() -> Result<(), Box<Error>> {
     loop {
         print!(
             "{}> ",
-            env::current_dir()
-                .expect("Unable to find current directory")
+            env::current_dir()?
                 .into_os_string()
                 .to_str()
                 .expect("Unable to convert OS String into string")
         );
-        stdout().flush();
+        stdout().flush()?;
 
         let mut input = String::new();
-        stdin().read_line(&mut input).expect("Unable to read input");
+        stdin().read_line(&mut input)?;
 
         let parts: Vec<&str> = input.trim().split_whitespace().collect();
-        let mut child = match parts.as_slice() {
+        match parts.as_slice() {
             ["cd", args..] => {
                 let new_dir = args.into_iter().peekable().peek().map_or("/", |x| *x);
                 let root = Path::new(new_dir);
@@ -30,13 +29,9 @@ fn main() {
                 }
                 continue;
             }
-            ["exit"] => return,
-            [command, args..] => Command::new(command)
-                .args(args)
-                .spawn()
-                .expect("Unable to run given command"),
+            ["exit"] => return Ok(()),
+            [command, args..] => Command::new(command).args(args).spawn()?.wait(),
             _ => continue,
-        };
-        child.wait();
+        }?;
     }
 }
