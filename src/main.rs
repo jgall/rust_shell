@@ -1,4 +1,6 @@
 #![feature(slice_patterns)]
+extern crate simple_error;
+use simple_error::SimpleError;
 use std::env;
 use std::io::{stdin, stdout, Write};
 use std::path::Path;
@@ -23,7 +25,7 @@ fn run() -> Result<(), Box<Error>> {
             env::current_dir()?
                 .into_os_string()
                 .to_str()
-                .expect("Unable to convert OS String into string")
+                .ok_or(SimpleError::new("Unable to decode OS String"))?
         );
         stdout().flush()?;
 
